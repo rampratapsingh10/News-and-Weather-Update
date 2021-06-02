@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>News & Weather Update | Weather</title>
+    <link rel="icon" href="/public/img/news.jpg" type="image/jpg">
+
+</head>
+<style>
+    * {
+        font-family: "Rimouski";
+    }
+    
+    body {
+        background-color: #293251;
+    }
+    
+    .container {
+        width: 100px;
+        background-color: pink;
+        display: block;
+        margin: 5% auto;
+        border-radius: 10px;
+        padding-bottom: 50px;
+        border-radius: 10px 10px 10px 10px;
+    }
+    
+    .app-title {
+        width: 300px;
+        height: 150px;
+        border-radius: 10px 10px 10px 10px;
+    }
+    
+    .notification {
+        background-color: #f8d7da;
+        display: none;
+    }
+    
+    .notification p {
+        color: #721c24;
+        font-size: 1.2em;
+        margin: 0;
+        text-align: center;
+        padding: 10px 0;
+    }
+    
+    .weather-container {
+        width: 400px;
+        margin: 10px;
+        height: 400px;
+        background-color: lightgreen;
+        border-radius: 10px 10px 10px 10px;
+    }
+    
+    .weather-icon {
+        margin-top: 20px;
+        width: 300px;
+        height: 150px;
+    }
+    
+    .weather-icon img {
+        display: block;
+        margin: 0 auto;
+        border-radius: 10px 10px 10px 10px;
+        background-color: ghostwhite;
+    }
+    
+    .temperature-value {
+        width: 300px;
+        height: 60px;
+    }
+    
+    .temperature-value p {
+        padding: 0;
+        margin: 0;
+        color: #293251;
+        font-size: 4em;
+        text-align: center;
+        cursor: pointer;
+    }
+    
+    .temperature-value span {
+        color: #293251;
+        font-size: 0.5em;
+    }
+    
+    .temperature-description p {
+        padding: 8px;
+        margin: 0;
+        color: #293251;
+        text-align: center;
+        font-size: 1.5em;
+    }
+    
+    .location p {
+        margin: 0;
+        padding: 0;
+        color: #293251;
+        text-align: center;
+        font-size: 1.2em;
+    }
+</style>
+
+<body>
+
+
+    <link rel="stylesheet" href="/public/css/weather.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-info">
+
+        <a class="navbar-brand" href="/">News & Weather Update </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/"> NEWS  <span class="sr-only">(current)</span></a>
+                </li>
+
+                <li class="nav-item active">
+                    <a class="nav-link" href="/weather"> WEATHER <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+
+        </div>
+    </nav>
+    <center>
+        <div class="container">
+            <h1 style="background-color: green;text-align:center;">Live Weather Update</h1><br>
+
+            <div class="notification"> </div>
+            <div class="weather-container">
+                <div class="weather-icon"> <br>
+                    <img src="/public/img/android_icon.png" alt="">
+                </div>
+                <div class="temperature-value">
+                    <p>- °<span>C</span></p>
+                </div> <br>
+                <div class="temperature-description">
+                    <p> - </p>
+                </div>
+                <div class="location">
+                    <p>-</p>
+                </div>
+            </div>
+        </div>
+    </center>
+    <script>
+        const iconElement = document.querySelector(".weather-icon");
+        const tempElement = document.querySelector(".temperature-value p");
+        const descElement = document.querySelector(".temperature-description p");
+        const locationElement = document.querySelector(".location p");
+        const notificationElement = document.querySelector(".notification");
+
+
+        const weather = {};
+
+        weather.temperature = {
+            unit: "celsius"
+        }
+
+        const KELVIN = 273;
+
+        const key = "88476a0ec36c35cbe18b3ea0c06efdbc";
+
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(setPosition, showError);
+        } else {
+            notificationElement.style.display = "block";
+            notificationElement.innerHTML = "<p>Browser doesn't Support Geolocation</p>";
+        }
+
+        function setPosition(position) {
+            let latitude = position.coords.latitude;
+            let longitude = position.coords.longitude;
+
+            getWeather(latitude, longitude);
+        }
+
+        function showError(error) {
+            notificationElement.style.display = "block";
+            notificationElement.innerHTML = `<p> ${error.message} </p>`;
+        }
+
+        function getWeather(latitude, longitude) {
+            let api = `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${key}`;
+
+            fetch(api)
+                .then(function(response) {
+                    let data = response.json();
+                    return data;
+                })
+                .then(function(data) {
+                    weather.temperature.value = Math.floor(data.main.temp - KELVIN);
+                    weather.description = data.weather[0].description;
+                    weather.iconId = data.weather[0].icon;
+                    weather.city = data.name;
+                    weather.country = data.sys.country;
+                })
+                .then(function() {
+                    displayWeather();
+                });
+        }
+
+        function displayWeather() {
+            iconElement.innerHTML = `<img src="img/${weather.iconId}.png"/>`;
+            tempElement.innerHTML = `${weather.temperature.value}°<span>C</span>`;
+            descElement.innerHTML = weather.description.toUpperCase();
+            locationElement.innerHTML = `${weather.city}, ${weather.country}`;
+        }
+
+
+        function celsiusToFahrenheit(temperature) {
+            return (temperature * 9 / 5) + 32;
+        }
+
+        tempElement.addEventListener("click", function() {
+            if (weather.temperature.value === undefined) return;
+
+            if (weather.temperature.unit == "celsius") {
+                let fahrenheit = celsiusToFahrenheit(weather.temperature.value);
+                fahrenheit = Math.floor(fahrenheit);
+
+                tempElement.innerHTML = `${fahrenheit}°<span>F</span>`;
+                weather.temperature.unit = "fahrenheit";
+            } else {
+                tempElement.innerHTML = `${weather.temperature.value}°<span>C</span>`;
+                weather.temperature.unit = "celsius"
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        footer {
+            text-align: center;
+            padding: 3px;
+            background-color: #17a2b8!important;
+            color: white;
+            font-size: 21px;
+        }
+        
+        a {
+            color: white;
+        }
+        
+        a:hover {
+            color: pink;
+        }
+    </style>
+    <footer><br>
+        <p> &#169; 2021 News & Weather Update</p>
+
+
+        <a href="https://www.linkedin.com/"><i class="fa fa-linkedin"></i></a>
+
+        <a href="https://www.facebook.com/"><i class="fa fa-facebook-f"></i></a>
+
+
+        <a href="https://www.twitter.com/"><i class="fa fa-twitter"></i></a>
+
+        <a href="https://www.instagram.com/"><i class="fa fa-instagram"></i></a><br><br>
+
+
+    </footer>
+</body>
+
+</html>
